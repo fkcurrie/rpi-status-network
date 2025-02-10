@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      - WATCHPACK_POLLING=true
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - network-scanner
+      - db
+      - system-monitor
+    networks:
+      - app-network
+    environment:
+      - MONITOR_URL=http://system-monitor:5000
+      - SCANNER_URL=http://network-scanner:5000
+
+  system-monitor:
+    build: ./system-monitor
+    privileged: true
+    volumes:
+      - /sys:/sys
+      - /proc:/proc
+    networks:
+      - app-network
+
+  network-scanner:
+    build: ./network-scanner
+    privileged: true
+    network_mode: "host"
+    volumes:
+      - ./data:/data
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    extra_hosts:
+      - "db:127.0.0.1"
+      - "backend:127.0.0.1"
+    depends_on:
+      - db
+
+  db:
+    image: alpine:latest
+    volumes:
+      - ./data:/data
+    command: >
+      sh -c "apk add --no-cache sqlite &&
+             touch /data/network_scans.db &&
+             chmod 666 /data/network_scans.db &&
+             tail -f /dev/null"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

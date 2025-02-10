@@ -1,0 +1,16 @@
+system-monitor/
+├── docker-compose.yml
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+├── backend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+├── system-monitor/
+│   ├── Dockerfile
+│   └── src/
+└── network-scanner/
+    ├── Dockerfile
+    └── src/ 
